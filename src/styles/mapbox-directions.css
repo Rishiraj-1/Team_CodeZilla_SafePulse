@@ -1,0 +1,398 @@
+/* ============================================================
+   SafePulse – Mapbox Directions Override Sheet
+   Bottom-center layout, dark-glass theme, purple accent
+   ============================================================ */
+
+/* ── 1. Wrapper (our custom container div) ─────────────────── */
+.safepulse-directions-wrapper {
+    width: 340px;
+    max-width: calc(100vw - 32px);
+}
+
+/* Instructions panel at top-right (separate container) */
+.safepulse-instructions-panel {
+    width: 320px;
+    max-width: 40vw;
+}
+
+/* ── 2. Root Directions Container ──────────────────────────── */
+.mapboxgl-ctrl-directions {
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    overflow: visible !important;
+    color: #e5e7eb !important;
+}
+
+/* ── 3. Component wrapper ──────────────────────────────────── */
+.mapbox-directions-component {
+    background: transparent !important;
+}
+
+.mapbox-directions-component-keyline {
+    border-top: none !important;
+}
+
+/* ── 4. INPUT CARD — dark glass at bottom ──────────────────── */
+.directions-control.directions-control-inputs {
+    background: rgba(18, 18, 18, 0.92) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.4),
+        inset 0 0.5px 0 rgba(255, 255, 255, 0.06) !important;
+    padding: 16px !important;
+    position: relative !important;
+    z-index: 10 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* ── 5. Origin & Destination rows ──────────────────────────── */
+.mapbox-directions-origin,
+.mapbox-directions-destination {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 12px !important;
+    margin-bottom: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    transition: border-color 0.2s, background 0.2s !important;
+    position: relative !important;
+}
+
+.mapbox-directions-origin:focus-within,
+.mapbox-directions-destination:focus-within {
+    border-color: rgba(183, 135, 245, 0.4) !important;
+    background: rgba(255, 255, 255, 0.07) !important;
+}
+
+.mapbox-directions-destination {
+    margin-bottom: 0 !important;
+}
+
+/* ── 6. Form-label (A / B markers) ─────────────────────────── */
+.mapbox-form-label {
+    background: rgba(183, 135, 245, 0.15) !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 10px 0 0 10px !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.mapbox-form-label .directions-icon {
+    fill: #b787f5 !important;
+    width: 24px !important;
+    height: 24px !important;
+}
+
+.mapbox-directions-origin .mapbox-form-label {
+    background: rgba(183, 135, 245, 0.15) !important;
+    box-shadow: none !important;
+}
+
+/* ── 7. Geocoder inputs — FIX TEXT OVERLAP ─────────────────── */
+.mapboxgl-ctrl-geocoder {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    min-width: calc(100% - 40px) !important;
+    max-width: calc(100% - 40px) !important;
+    width: calc(100% - 40px) !important;
+    margin-left: 40px !important;
+    /* KEY: leave space for the A/B marker */
+    border-radius: 0 12px 12px 0 !important;
+}
+
+.mapboxgl-ctrl-geocoder input[type='text'] {
+    background-color: transparent !important;
+    color: #f3f4f6 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    height: 42px !important;
+    /* KEY FIX: add enough left padding to clear the A/B marker */
+    padding: 10px 40px 10px 8px !important;
+    border: none !important;
+    caret-color: #b787f5 !important;
+    letter-spacing: 0.01em !important;
+}
+
+.mapboxgl-ctrl-geocoder input[type='text']::placeholder {
+    color: rgba(255, 255, 255, 0.25) !important;
+    font-weight: 400 !important;
+}
+
+.mapboxgl-ctrl-geocoder input[type='text']:focus {
+    color: #ffffff !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.mapbox-directions-origin input[type='text'] {
+    box-shadow: none !important;
+}
+
+.mapbox-directions-origin .mapboxgl-ctrl-geocoder {
+    border-radius: 0 !important;
+}
+
+/* ── 8. Suggestion dropdown ────────────────────────────────── */
+.mapboxgl-ctrl-geocoder ul {
+    background-color: rgba(24, 24, 27, 0.98) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    margin-top: 4px !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+    overflow: hidden !important;
+    z-index: 9999 !important;
+    /* Position dropdown ABOVE the input (since inputs are at bottom) */
+    top: auto !important;
+    bottom: 100% !important;
+    margin-bottom: 4px !important;
+    margin-top: 0 !important;
+}
+
+.mapboxgl-ctrl-geocoder ul>li>a {
+    color: #d1d5db !important;
+    padding: 10px 14px !important;
+    font-size: 12px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+    transition: background 0.15s !important;
+}
+
+.mapboxgl-ctrl-geocoder ul>li>a:hover {
+    background-color: rgba(183, 135, 245, 0.15) !important;
+    color: #ffffff !important;
+}
+
+.mapboxgl-ctrl-geocoder ul>li.active>a,
+.mapboxgl-ctrl-geocoder ul>li>a.active {
+    background-color: rgba(183, 135, 245, 0.2) !important;
+    color: #ffffff !important;
+}
+
+/* ── 9. Geocoder buttons (clear / search icon) ─────────────── */
+.mapboxgl-ctrl-geocoder button {
+    background-color: transparent !important;
+}
+
+.mapboxgl-ctrl-geocoder .geocoder-pin-right * {
+    background-color: transparent !important;
+}
+
+.mapboxgl-ctrl-geocoder .geocoder-icon-search {
+    fill: rgba(255, 255, 255, 0.25) !important;
+    opacity: 1 !important;
+    display: none !important;
+}
+
+.mapboxgl-ctrl-geocoder .geocoder-icon-close {
+    fill: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ── 10. Reverse button — hidden (causes layout offset) ───── */
+.directions-reverse {
+    display: none !important;
+}
+
+/* ── 11. Profile switcher — hidden ─────────────────────────── */
+.mapbox-directions-profile {
+    display: none !important;
+}
+
+/* ── 12. INSTRUCTIONS CARD — now inside top-right container ─ */
+.directions-control.directions-control-directions {
+    background: rgba(18, 18, 18, 0.92) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.5) !important;
+    max-height: calc(100vh - 220px) !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+.mapbox-directions-instructions {
+    background: transparent !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+}
+
+.mapbox-directions-instructions-wrapper {
+    background: transparent !important;
+}
+
+/* ── 13. Route summary ─────────────────────────────────────── */
+.mapbox-directions-routes {
+    background: transparent !important;
+}
+
+.mapbox-directions-routes ul {
+    background: transparent !important;
+}
+
+.mapbox-directions-routes li {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    margin: 4px 8px !important;
+}
+
+.mapbox-directions-routes li:hover,
+.mapbox-directions-routes .mapbox-directions-route-active {
+    background: rgba(183, 135, 245, 0.1) !important;
+    border-color: rgba(183, 135, 245, 0.25) !important;
+}
+
+.mapbox-directions-routes input[type=radio]+label {
+    color: #d1d5db !important;
+    background: transparent !important;
+}
+
+.mapbox-directions-routes input[type=radio]:checked+label {
+    color: #ffffff !important;
+    background: rgba(183, 135, 245, 0.1) !important;
+}
+
+.mapbox-directions-route-heading {
+    background: transparent !important;
+    color: #9ca3af !important;
+}
+
+.mapbox-directions-route-summary {
+    background: transparent !important;
+    color: #e5e7eb !important;
+    padding: 10px 14px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.mapbox-directions-route-summary h1 {
+    color: #ffffff !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+}
+
+.mapbox-directions-route-summary span {
+    color: #9ca3af !important;
+}
+
+/* ── 14. Turn-by-turn steps ────────────────────────────────── */
+.mapbox-directions-steps {
+    background: transparent !important;
+}
+
+.mapbox-directions-step {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+    color: #d1d5db !important;
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    transition: background 0.15s !important;
+}
+
+.mapbox-directions-step:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.mapbox-directions-step:after {
+    border-color: rgba(183, 135, 245, 0.25) !important;
+}
+
+.mapbox-directions-step-distance {
+    color: #6b7280 !important;
+    font-size: 10px !important;
+}
+
+.mapbox-directions-instructions .directions-icon {
+    fill: #b787f5 !important;
+}
+
+.mapbox-directions-instructions .directions-icon:before {
+    background: transparent !important;
+}
+
+/* ── 15. Error message ─────────────────────────────────────── */
+.mapbox-directions-error {
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    margin: 8px 12px !important;
+}
+
+/* ── 16. Inputs-area buttons ───────────────────────────────── */
+.mapbox-directions-inputs button {
+    background-color: transparent !important;
+}
+
+.mapbox-directions-inputs .directions-pin-right * {
+    background-color: transparent !important;
+}
+
+/* ── 17. Custom scrollbar for instructions ─────────────────── */
+.directions-control.directions-control-directions::-webkit-scrollbar {
+    width: 3px;
+}
+
+.directions-control.directions-control-directions::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.directions-control.directions-control-directions::-webkit-scrollbar-thumb {
+    background: rgba(183, 135, 245, 0.3);
+    border-radius: 4px;
+}
+
+.directions-control.directions-control-directions::-webkit-scrollbar-thumb:hover {
+    background: rgba(183, 135, 245, 0.5);
+}
+
+/* ── 18. Custom close button ───────────────────────────────── */
+.safepulse-directions-close {
+    position: absolute;
+    top: -8px;
+    right: -2px;
+    z-index: 30;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
+    border: 2px solid rgba(18, 18, 18, 0.9);
+    transition: transform 0.2s, box-shadow 0.2s;
+    line-height: 1;
+}
+
+.safepulse-directions-close:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+}
+
+/* ── 19. Multiple-routes bar ───────────────────────────────── */
+.mapbox-directions-multiple {
+    background: transparent !important;
+}
+
+/* ── 20. Responsive — mobile ───────────────────────────────── */
+@media (max-width: 640px) {
+    .directions-control.directions-control-directions {
+        max-height: 160px !important;
+    }
+}
