@@ -2,15 +2,19 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// Backend URL for development proxy (uses localhost)
+// In production, frontend uses VITE_API_URL from environment
 const BACKEND = 'http://localhost:8000';
 
 export default defineConfig({
   server: {
-    port: 3000,
+    port: 5173,
     host: '0.0.0.0',
     allowedHosts: ['app.teamcodezilla.in'],
     proxy: {
-      // All backend API routes forwarded to local FastAPI
+      // All backend API routes forwarded to local FastAPI backend
+      // This proxy is ONLY used in development mode
+      // In production, the frontend uses VITE_API_URL environment variable
       '/users': { target: BACKEND, changeOrigin: true },
       '/auth': { target: BACKEND, changeOrigin: true },
       '/sos': { target: BACKEND, changeOrigin: true },

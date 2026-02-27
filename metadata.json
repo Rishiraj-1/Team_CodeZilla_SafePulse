@@ -1,0 +1,8 @@
+{
+  "name": "SafePulse",
+  "description": "A comprehensive citizen safety intelligence platform connecting citizens, guardians, and city administration for real-time safety monitoring and emergency response.",
+  "requestFramePermissions": [
+    "geolocation",
+    "microphone"
+  ]
+}
