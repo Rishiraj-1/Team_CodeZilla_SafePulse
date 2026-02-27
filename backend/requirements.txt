@@ -1,0 +1,41 @@
+# Core
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+python-dotenv==1.0.1
+
+# Database
+sqlalchemy[asyncio]==2.0.27
+asyncpg==0.29.0
+geoalchemy2==0.14.3
+alembic==1.13.1
+
+# Auth
+firebase-admin==6.4.0
+python-jose[cryptography]==3.3.0
+
+# Validation & Serialization
+pydantic==2.6.1
+pydantic-settings==2.1.0
+
+# Clustering
+scikit-learn>=1.4.2
+numpy>=1.26.4
+
+# Polyline decoding
+polyline==2.0.2
+
+# Telegram Bot
+httpx==0.27.0
+
+# WebSockets (included in fastapi/uvicorn)
+websockets==12.0
+
+# CORS
+# (included in fastapi)
+
+# Logging
+loguru==0.7.2
+
+# Utilities
+shapely==2.0.3
+geojson==3.1.0
