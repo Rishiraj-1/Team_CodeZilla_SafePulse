@@ -3,6 +3,8 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from app.config.settings import get_settings
+
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "")
@@ -11,12 +13,17 @@ SMTP_PASS = os.getenv("SMTP_PASS", "")
 def send_application_decision_email(to_email: str, name: str, decision: str):
     """
     Sends an approval or rejection styled HTML email.
+    Uses FRONTEND_URL from environment configuration for email links.
     If SMTP credentials are not configured, it fails silently to avoid breaking the application flow.
     """
     if not SMTP_USER or not SMTP_PASS:
         print(f"[WARN] Email not sent to {to_email}. SMTP credentials are not configured.")
         return
 
+    settings = get_settings()
+    frontend_url = settings.FRONTEND_URL
+    login_link = f"{frontend_url}/login"
+    
     is_approved = decision.strip().upper() == "APPROVED"
     subject = "SafePulse Authority Application Approved" if is_approved else "SafePulse Authority Application Update"
     
@@ -29,7 +36,7 @@ def send_application_decision_email(to_email: str, name: str, decision: str):
             <p>We are pleased to inform you that your application for an Authority account on the SafePulse network has been <strong>approved</strong>.</p>
             <p>You can now log in to the SafePulse command center and access the dashboard.</p>
             <br/>
-            <a href="http://localhost:3000/login" style="background-color: #b787f5; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Log in to Dashboard</a>
+            <a href="{login_link}" style="background-color: #b787f5; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Log in to Dashboard</a>
             <br/><br/>
             <p>Thank you for contributing to public safety.</p>
             <p style="color: #666; font-size: 12px;">The SafePulse Administration Team</p>

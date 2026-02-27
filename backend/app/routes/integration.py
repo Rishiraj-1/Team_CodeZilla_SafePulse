@@ -127,33 +127,146 @@ async def get_red_zones(db: AsyncSession = Depends(get_db)):
     return zones
 
 
+from app.middleware.auth import _get_current_user
+from app.models import User, SOSSession
+from urllib.parse import quote
+
+from fastapi import BackgroundTasks
+
+from fastapi import Request
+
 @router.post("/sos")
-async def trigger_sos(payload: SOSRequest):
+async def trigger_sos(
+    payload: SOSRequest,
+    background_tasks: BackgroundTasks,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(_get_current_user)
+):
     """
-    Trigger Telegram alert. No auth required.
+    Trigger Telegram alert and return WhatsApp tracking info.
     """
+    # 1) Check emergency contact
+    if not current_user.emergency_contact_phone:
+        raise HTTPException(status_code=400, detail="No emergency contact set")
+        
+    # 2) Create new sos_sessions record
+    new_session = SOSSession(user_id=current_user.id)
+    db.add(new_session)
+    await db.commit()
+    await db.refresh(new_session)
+    
+    session_id = str(new_session.id)
+    
+    # 3) Generate WhatsApp Click-to-Chat link
+    contact_phone = current_user.emergency_contact_phone
+    if len(contact_phone) == 10:
+        contact_phone = f"91{contact_phone}"
+
+    # If the request comes from Cloudflare tunnel, it will have x-forwarded-host or host
+    forwarded_host = request.headers.get("x-forwarded-host")
+    host = forwarded_host or request.headers.get("host") or "app.teamcodezilla.in"
+    scheme = request.headers.get("x-forwarded-proto", "https")
+    
+    # Check if the frontend passed a specific origin (like Vite dev server origin)
+    origin = request.headers.get("origin")
+    if origin and "localhost" not in origin and "127.0.0.1" not in origin:
+        domain = origin
+    else:
+        domain = f"{scheme}://{host}"
+        
+    tracking_link = f"{domain}/track/{session_id}"
+    message = f"🚨 SOS Alert\n{current_user.name} has triggered an emergency.\nLive location:\n{tracking_link}"
+    encoded_message = quote(message)
+    whatsapp_url = f"https://wa.me/{contact_phone}?text={encoded_message}"
+    
+    # 4) Telegram alert (kept intact per requirements, using BackgroundTasks)
     token = os.getenv("TELEGRAM_BOT_TOKEN", settings.TELEGRAM_BOT_TOKEN)
     chat_id = os.getenv("TELEGRAM_CHAT_ID", settings.TELEGRAM_ADMIN_CHAT_ID)
     
-    if not token or not chat_id:
-        # even if not configured, return success to prevent app crash as per constraints? 
-        # But user said "Telegram message sent instantly", so it must work.
-        pass
+    if token and chat_id:
+        telegram_msg = f"🚨 SOS ALERT 🚨\nUser: {current_user.name}\nLocation:\nhttps://maps.google.com/?q={payload.latitude},{payload.longitude}\nTracking: {tracking_link}\nImmediate assistance required."
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        
+        async def send_telegram():
+            async with httpx.AsyncClient() as client:
+                try:
+                    await client.post(url, json={
+                        "chat_id": chat_id,
+                        "text": telegram_msg
+                    })
+                except Exception as e:
+                    print(f"Failed to send Telegram message: {e}")
+                    
+        background_tasks.add_task(send_telegram)
 
-    message = f"🚨 SOS ALERT 🚨\nLocation:\nhttps://maps.google.com/?q={payload.latitude},{payload.longitude}\nImmediate assistance required."
-    
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    
-    async with httpx.AsyncClient() as client:
-        try:
-            await client.post(url, json={
-                "chat_id": chat_id,
-                "text": message
-            })
-        except Exception as e:
-            print(f"Failed to send Telegram message: {e}")
+    return {
+        "status": "SOS sent",
+        "session_id": session_id,
+        "whatsapp_url": whatsapp_url
+    }
 
-    return {"status": "SOS sent"}
+class SOSLocationUpdate(BaseModel):
+    session_id: str
+    latitude: float
+    longitude: float
+
+@router.post("/sos/location")
+async def update_sos_location(
+    payload: SOSLocationUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(_get_current_user)
+):
+    from app.models import SOSLocation
+    result = await db.execute(select(SOSSession).where(
+        SOSSession.id == payload.session_id,
+        SOSSession.user_id == current_user.id
+    ))
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found or forbidden")
+    if not session.active:
+        raise HTTPException(status_code=400, detail="Session is not active")
+        
+    loc = SOSLocation(
+        session_id=session.id,
+        latitude=payload.latitude,
+        longitude=payload.longitude
+    )
+    db.add(loc)
+    await db.commit()
+    return {"status": "success"}
+
+@router.get("/sos/location/{session_id}")
+async def get_sos_location(
+    session_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    from app.models import SOSLocation
+    result = await db.execute(select(SOSSession).where(SOSSession.id == session_id))
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    locs_result = await db.execute(
+        select(SOSLocation)
+        .where(SOSLocation.session_id == session_id)
+        .order_by(SOSLocation.created_at.desc())
+        .limit(50)
+    )
+    locs = locs_result.scalars().all()
+    # Return chronologically
+    locs_list = list(locs)[::-1]
+    
+    return {
+        "active": session.active,
+        "locations": [
+            {"lat": l.latitude, "lng": l.longitude, "time": l.created_at.isoformat()}
+            for l in locs_list
+        ]
+    }
+
 
 @router.post("/direct-request")
 async def trigger_direct_request(payload: DirectRequestParams):

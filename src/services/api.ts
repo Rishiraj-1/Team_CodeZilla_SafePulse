@@ -1,4 +1,9 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
+// Warn in development if API URL is not set
+if (!API_BASE_URL && import.meta.env.DEV) {
+    console.warn('⚠️  VITE_API_URL is not set. Make sure .env.local has VITE_API_URL=http://localhost:8000');
+}
 
 export interface RedZone {
     id: string;
@@ -17,7 +22,7 @@ export interface BaselineRisk {
 
 export const fetchBaselineRisk = async (city: string = 'Lonavala'): Promise<BaselineRisk[]> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/baseline-risk?city=${encodeURIComponent(city)}`);
+        const response = await fetch(API_BASE_URL + '/baseline-risk?city=' + encodeURIComponent(city));
         if (!response.ok) {
             console.warn(`Failed to fetch baseline risk: ${response.statusText}`);
             return [];
@@ -31,7 +36,7 @@ export const fetchBaselineRisk = async (city: string = 'Lonavala'): Promise<Base
 
 export const fetchRedZones = async (): Promise<RedZone[]> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/red-zones`);
+        const response = await fetch(API_BASE_URL + '/red-zones');
         if (!response.ok) {
             console.warn(`Failed to fetch red zones: ${response.statusText}`);
             return [];
@@ -43,16 +48,16 @@ export const fetchRedZones = async (): Promise<RedZone[]> => {
     }
 };
 
-export const triggerSOS = async (latitude: number, longitude: number): Promise<{ status: string }> => {
+export const triggerSOS = async (latitude: number, longitude: number): Promise<{ status: string, session_id?: string, whatsapp_url?: string }> => {
     try {
         const token = localStorage.getItem('safepulse_auth_token') || sessionStorage.getItem('safepulse_auth_token');
-        const response = await fetch(`${API_BASE_URL}/sos/trigger`, {
+        const response = await fetch(API_BASE_URL + '/sos', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ lat: latitude, lng: longitude }),
+            body: JSON.stringify({ latitude, longitude }),
         });
 
         if (!response.ok) {
@@ -68,7 +73,7 @@ export const triggerSOS = async (latitude: number, longitude: number): Promise<{
 
 export const sendDirectRequest = async (targetGuardianId: string, latitude: number, longitude: number, destination?: string, destination_coords?: [number, number]): Promise<{ status: string }> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/direct-request`, {
+        const response = await fetch(API_BASE_URL + '/direct-request', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -92,7 +97,7 @@ export const acceptRequest = async (
     latitude: number, longitude: number
 ): Promise<{ status: string }> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/accept-request`, {
+        const response = await fetch(API_BASE_URL + '/accept-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -115,7 +120,7 @@ export const acceptRequest = async (
 
 export const updateCitizenLocation = async (sessionId: string, lat: number, lng: number) => {
     try {
-        await fetch(`${API_BASE_URL}/update-citizen-location`, {
+        await fetch(API_BASE_URL + '/update-citizen-location', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId, lat, lng }),
@@ -125,7 +130,7 @@ export const updateCitizenLocation = async (sessionId: string, lat: number, lng:
 
 export const updateGuardianLocation = async (sessionId: string, lat: number, lng: number) => {
     try {
-        await fetch(`${API_BASE_URL}/update-guardian-location`, {
+        await fetch(API_BASE_URL + '/update-guardian-location', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId, lat, lng }),
@@ -134,7 +139,7 @@ export const updateGuardianLocation = async (sessionId: string, lat: number, lng
 };
 
 export const generateVerificationOtp = async (sessionId: string, guardianId: string, guardianName: string) => {
-    const response = await fetch(`${API_BASE_URL}/generate-verification-otp`, {
+    const response = await fetch(API_BASE_URL + '/generate-verification-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId, guardian_id: guardianId, guardian_name: guardianName }),
@@ -143,7 +148,7 @@ export const generateVerificationOtp = async (sessionId: string, guardianId: str
 };
 
 export const verifyOtp = async (sessionId: string, otp: string) => {
-    const response = await fetch(`${API_BASE_URL}/verify-otp`, {
+    const response = await fetch(API_BASE_URL + '/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId, otp }),

@@ -16,6 +16,8 @@ interface NavSession {
     activeDestination: { name: string; coords: [number, number] } | null;
 }
 
+import { EmergencyContactModal } from './EmergencyContactModal';
+
 export const GlobalLayout: React.FC = () => {
     // Restore from sessionStorage on first render
     const savedRaw = sessionStorage.getItem(NAV_STORAGE_KEY);
@@ -72,6 +74,11 @@ export const GlobalLayout: React.FC = () => {
                         navState, activeDestination
                     }} />
                 </div>
+            </div>
+
+            {/* 3. MODALS */}
+            <div className="pointer-events-auto z-[9999]">
+                <EmergencyContactModal />
             </div>
         </div>
     );

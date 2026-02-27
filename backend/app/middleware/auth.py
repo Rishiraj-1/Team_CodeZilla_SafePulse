@@ -65,6 +65,11 @@ async def _get_current_user(
         select(User).where(User.id == user_id)
     )
     user = result.scalar_one_or_none()
+    
+    # Check if user exists by email if ID not found (important for migrations)
+    if user is None and email:
+        res_email = await db.execute(select(User).where(User.email == email))
+        user = res_email.scalar_one_or_none()
 
     if user is None:
         from app.models import UserRole, UserStatus
@@ -72,23 +77,6 @@ async def _get_current_user(
         
         # Phone OTP logins may not have an email natively in the JWT. Provide a safe fallback.
         resolved_email = email or f"{phone}@safepulse.local"
-        
-        # Check if user already exists by email (to handle legacy data or migrations without Supabase IDs)
-        existing_by_email = None
-        if email:
-            res_email = await db.execute(select(User).where(User.email == email))
-            existing_by_email = res_email.scalar_one_or_none()
-
-        if existing_by_email:
-            # Link accounts: update the old user's ID to the new Supabase ID
-            # Delete any old user with this exact ID just in case
-            await db.execute(delete(User).where(User.id == user_id))
-            # SQLAlchemy won't let us easily update a UUID primary key like this simply because Cascade properties
-            # Wait, updating PK is hard in SQLAlchemy. Instead, let's just use the existing user
-            # and let the frontend use the old ID? No, JWT has the Supabase ID. Wait, Supabase ID is what matters.
-            # If we just change request.state.current_user to existing_by_email, it works for this request but next time it searches by user_id and fails to find it.
-            # Better to create another lookup: if not found by user_id, search by email.
-            pass
 
         # Extract role from metadata if frontend passed it during signup
         meta_role = user_metadata.get("role")
@@ -115,28 +103,16 @@ async def _get_current_user(
             gender=None
         )
         
-        if existing_by_email:
-             # Just use the existing user record if it matches by email, even if the ID doesn't match for MVP.
-             # Wait, Supabase JWT provides `sub` (user_id). On next login, `select(User).where(User.id == user_id)` will fail again, 
-             # and we'll hit this block again. This is fine for MVP logic as it acts as a fallback.
-             user = existing_by_email
-        else:
-            db.add(user)
-            try:
-                await db.commit()
-                await db.refresh(user)
-            except Exception:
-                await db.rollback()
-                result = await db.execute(select(User).where(User.id == user_id))
-                user = result.scalar_one_or_none()
-                if not user:
-                    # Final fallback: try by email again
-                    if email:
-                        res2 = await db.execute(select(User).where(User.email == email))
-                        user = res2.scalar_one_or_none()
-                        
-                    if not user:
-                        raise HTTPException(status_code=500, detail="Failed to create user profile")
+        db.add(user)
+        try:
+            await db.commit()
+            await db.refresh(user)
+        except Exception:
+            await db.rollback()
+            result = await db.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+            if not user:
+                raise HTTPException(status_code=500, detail="Failed to create user profile")
 
     request.state.current_user = user
     return user

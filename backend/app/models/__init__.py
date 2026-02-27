@@ -22,6 +22,8 @@ from app.models.models import (
     GuardianAlertStatus,
     GuardianAvailabilityStatus,
     GuardianOnlineStatus,
+    SOSSession,
+    SOSLocation,
 )
 
 __all__ = [
@@ -48,5 +50,7 @@ __all__ = [
     "GuardianAlertStatus",
     "GuardianAvailabilityStatus",
     "GuardianOnlineStatus",
+    "SOSSession",
+    "SOSLocation",
 ]
 

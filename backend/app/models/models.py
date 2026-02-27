@@ -110,6 +110,7 @@ class User(Base):
     phone = Column(String(20), nullable=True)
     phone_verified = Column(Boolean, default=False)
     gender = Column(String(50), nullable=True)
+    emergency_contact_phone = Column(String(20), nullable=True)
     
     # Guardian specific fields
     category = Column(Enum(GuardianCategory), nullable=True)
@@ -219,6 +220,30 @@ class SOSEvent(Base):
     resolved_at = Column(DateTime(timezone=True), nullable=True)
 
     user = relationship("User", foreign_keys=[user_id])
+
+
+# ── Live SOS Tracking ────────────────────────────────
+class SOSSession(Base):
+    __tablename__ = "sos_sessions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    started_at = Column(DateTime(timezone=True), server_default=func.now())
+    ended_at = Column(DateTime(timezone=True), nullable=True)
+    active = Column(Boolean, default=True)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+class SOSLocation(Base):
+    __tablename__ = "sos_locations"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("sos_sessions.id", ondelete="CASCADE"), nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    session = relationship("SOSSession", foreign_keys=[session_id])
 
 
 # ── Guardian Locations (live heartbeat) ───────────────

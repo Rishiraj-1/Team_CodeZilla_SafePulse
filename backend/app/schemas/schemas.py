@@ -122,6 +122,7 @@ class UserResponse(BaseModel):
     name: str
     phone: Optional[str]
     phone_verified: Optional[bool] = False
+    emergency_contact_phone: Optional[str] = None
     gender: Optional[str]
     category: Optional[GuardianCategoryEnum] = None
     document_url: Optional[str] = None

@@ -8,7 +8,7 @@ const BACKEND = 'http://localhost:8000';
 
 export default defineConfig({
   server: {
-    port: 5173,
+    port: 3000,
     host: '0.0.0.0',
     allowedHosts: ['app.teamcodezilla.in'],
     proxy: {
@@ -16,7 +16,9 @@ export default defineConfig({
       // This proxy is ONLY used in development mode
       // In production, the frontend uses VITE_API_URL environment variable
       '/users': { target: BACKEND, changeOrigin: true },
-      '/auth': { target: BACKEND, changeOrigin: true },
+      '/auth/sync': { target: BACKEND, changeOrigin: true },
+      '/auth/register': { target: BACKEND, changeOrigin: true },
+      '/auth/login': { target: BACKEND, changeOrigin: true },
       '/sos': { target: BACKEND, changeOrigin: true },
       '/api': { target: BACKEND, changeOrigin: true },
       '/direct': { target: BACKEND, changeOrigin: true },

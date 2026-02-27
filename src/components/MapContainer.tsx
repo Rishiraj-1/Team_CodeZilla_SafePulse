@@ -192,7 +192,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({ mode, routingProfile
                         if (!token) return;
                         try {
                             const res = await fetch(
-                                `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/risk-zones`,
+                                `${import.meta.env.VITE_API_URL ?? ''}/api/risk-zones`,
                                 { headers: { Authorization: `Bearer ${token}` } }
                             );
                             if (!res.ok) return;

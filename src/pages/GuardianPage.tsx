@@ -7,8 +7,8 @@ import { sendDirectRequest, acceptRequest, updateGuardianLocation, generateVerif
 import { isGuardianProfileComplete } from '../utils/guardianProfile';
 import mapboxgl from 'mapbox-gl';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? '';
-// WebSocket base: if BASE_URL is empty (Vite proxy), use the page origin but with ws/wss protocol
+const BASE_URL = import.meta.env.VITE_API_URL || '';
+// WebSocket base:
 const WS_BASE = BASE_URL
     ? BASE_URL.replace(/^http/, 'ws')
     : `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;

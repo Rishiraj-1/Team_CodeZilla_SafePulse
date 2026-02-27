@@ -76,6 +76,7 @@ export const CitizenPage: React.FC = () => {
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const [isDashboardOpen, setIsDashboardOpen] = useState(false);
     const [sosStatus, setSosStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+    const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
     const [showProfilePicker, setShowProfilePicker] = useState(false);
 
     // Live Guardian Stats
@@ -102,11 +103,12 @@ export const CitizenPage: React.FC = () => {
 
     useEffect(() => {
         if (user?.role === 'citizen') {
-            const apiBase = import.meta.env.VITE_API_URL ?? '';
+            const apiBase = import.meta.env.VITE_API_URL || '';
             const wsUrl = apiBase
                 ? apiBase.replace(/^http/, 'ws')
                 : `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
-            const ws = new WebSocket(`${wsUrl}/ws/citizen`);
+            const token = localStorage.getItem('safepulse_auth_token') || sessionStorage.getItem('safepulse_auth_token');
+            const ws = new WebSocket(`${wsUrl}/ws/citizen?token=${token || ''}`);
 
             ws.onmessage = (event) => {
                 try {
@@ -200,8 +202,13 @@ export const CitizenPage: React.FC = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 try {
-                    await triggerSOS(position.coords.latitude, position.coords.longitude);
+                    const response = await triggerSOS(position.coords.latitude, position.coords.longitude);
                     setSosStatus('success');
+
+                    // Save WhatsApp URL to state instead of auto-opening
+                    if (response.whatsapp_url) {
+                        setWhatsappUrl(response.whatsapp_url);
+                    }
 
                     try {
                         const data = await fetchMapData();
@@ -230,8 +237,14 @@ export const CitizenPage: React.FC = () => {
                         console.error("Failed to fetch nearest guardian", e);
                     }
 
-                } catch (err) {
+                } catch (err: any) {
                     setSosStatus('error');
+                    console.error("SOS Trigger Error:", err);
+                    if (err.message && err.message.includes('No emergency contact set')) {
+                        alert('No emergency contact set! Please set one from your profile.');
+                    } else {
+                        alert(`SOS Failed: ${err.message || 'Unknown error'}`);
+                    }
                 }
             }, () => {
                 setSosStatus('error');
@@ -478,13 +491,25 @@ export const CitizenPage: React.FC = () => {
                             </div>
 
                             {/* Emergency Call Button */}
-                            <a
-                                href="tel:181"
-                                className="w-full relative z-10 h-11 mb-3 bg-danger-red/20 border border-danger-red/50 hover:bg-danger-red/40 hover:border-danger-red text-white font-bold uppercase tracking-[0.1em] rounded-xl flex items-center justify-center transition-all duration-300 gap-2 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
-                            >
-                                <span className="material-symbols-outlined text-[18px]">call</span>
-                                Call Women Helpline (1090)
-                            </a>
+                            {whatsappUrl ? (
+                                <a
+                                    href={whatsappUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full relative z-10 h-11 mb-3 bg-[#25D366]/20 border border-[#25D366]/50 hover:bg-[#25D366]/40 hover:border-[#25D366] text-[#25D366] glow-text font-bold uppercase tracking-[0.1em] rounded-xl flex items-center justify-center transition-all duration-300 gap-2 shadow-[0_0_15px_rgba(37,211,102,0.3)]"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">chat</span>
+                                    Open WhatsApp
+                                </a>
+                            ) : (
+                                <a
+                                    href="tel:181"
+                                    className="w-full relative z-10 h-11 mb-3 bg-danger-red/20 border border-danger-red/50 hover:bg-danger-red/40 hover:border-danger-red text-white font-bold uppercase tracking-[0.1em] rounded-xl flex items-center justify-center transition-all duration-300 gap-2 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">call</span>
+                                    Call Women Helpline (181)
+                                </a>
+                            )}
 
                             <button
                                 onClick={() => setIsSosActive(false)}

@@ -14,6 +14,7 @@ export interface User {
     phone_verified?: boolean;
     gender?: string;
     profile_image_url?: string;
+    emergency_contact_phone?: string;
 }
 
 interface AuthContextType {
@@ -21,6 +22,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isLoading: boolean;
     logout: () => Promise<void>;
+    setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     phone_verified: data.phone_verified || false,
                     gender: data.gender,
                     profile_image_url: data.profile_image_url || null,
+                    emergency_contact_phone: data.emergency_contact_phone || null,
                     picture: data.profile_image_url ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=0D8ABC&color=fff`,
                 });
@@ -110,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return (
         <AuthContext.Provider value={{
             user,
+            setUser,
             isAuthenticated: !!user,
             isLoading,
             logout

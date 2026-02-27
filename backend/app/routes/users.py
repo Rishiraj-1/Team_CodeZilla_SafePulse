@@ -35,6 +35,7 @@ async def get_me(user: User = Depends(_get_current_user)):
         category=user.category,
         document_url=user.document_url,
         profile_image_url=user.profile_image_url,
+        emergency_contact_phone=user.emergency_contact_phone,
         institution=user.institution,
         created_at=user.created_at,
     )
@@ -174,6 +175,31 @@ async def update_profile(
 
     await db.commit()
     return {"message": "success"}
+
+
+class EmergencyContactRequest(BaseModel):
+    phone: str
+
+@router.post("/emergency-contact")
+async def update_emergency_contact(
+    payload: EmergencyContactRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(_get_current_user)
+):
+    import re
+    # Remove "+", spaces, dashes
+    phone = re.sub(r'[\+\s\-]', '', payload.phone)
+    if not phone.isdigit() or len(phone) < 10:
+        raise HTTPException(status_code=400, detail="Invalid phone number format")
+    
+    result = await db.execute(select(User).where(User.id == current_user.id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user.emergency_contact_phone = phone
+    await db.commit()
+    return {"message": "Emergency contact updated successfully"}
 
 
 

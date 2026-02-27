@@ -11,9 +11,14 @@ export interface User {
     isNewUser?: boolean;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL ?? '';
 const TOKEN_KEY = 'safepulse_auth_token';
 const USER_KEY = 'safepulse_mock_user';
+
+// Warn in development if API URL is not set
+if (!API_URL && import.meta.env.DEV) {
+    console.warn('⚠️  VITE_API_URL is not set. Make sure .env.local has VITE_API_URL=http://localhost:8000');
+}
 
 const api = axios.create({
     baseURL: API_URL,
@@ -25,7 +30,7 @@ api.interceptors.request.use(async (config) => {
     // MOCK: Just use local token if available
     const localToken = localStorage.getItem(TOKEN_KEY);
     if (localToken) {
-        config.headers.Authorization = `Bearer ${localToken}`;
+        config.headers.Authorization = 'Bearer ' + localToken;
     }
     return config;
 });

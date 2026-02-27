@@ -3,6 +3,7 @@ Application settings loaded from environment variables.
 Uses pydantic-settings for validation and type coercion.
 """
 
+import os
 from functools import lru_cache
 from typing import List
 
@@ -22,11 +23,21 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
-    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://localhost:8080"
+    
+    # Frontend URL - used for email links and CORS
+    FRONTEND_URL: str = "http://localhost:5173"
+    
+    # CORS_ORIGINS can be explicitly set or will be built from FRONTEND_URL
+    CORS_ORIGINS: str = ""
+    
     JWT_SECRET: str = "safepulse-super-secret-key-for-mvp"
 
     # ── Database ─────────────────────────────────────────
     DATABASE_URL: str
+
+    # ── Supabase ─────────────────────────────────────────
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
 
     # ── Firebase ─────────────────────────────────────────
     FIREBASE_PROJECT_ID: str = ""
@@ -64,7 +75,33 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> List[str]:
-        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+        """
+        Build CORS origin list from:
+        1. Explicitly set CORS_ORIGINS if provided
+        2. FRONTEND_URL environment variable
+        3. Default dev origins
+        """
+        # If CORS_ORIGINS is explicitly set, use it
+        if self.CORS_ORIGINS:
+            return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+        
+        # Otherwise, build from FRONTEND_URL and allow dev origins
+        origins = [
+            "http://localhost:5173",  # Vite default dev port
+            "http://localhost:3000",  # Alternative dev port
+            "http://localhost:8080",  # Another common dev port
+            self.FRONTEND_URL,        # Production frontend URL
+        ]
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_origins = []
+        for origin in origins:
+            if origin and origin not in seen:
+                unique_origins.append(origin)
+                seen.add(origin)
+        
+        return unique_origins
 
     @property
     def is_production(self) -> bool:

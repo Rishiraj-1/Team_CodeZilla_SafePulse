@@ -26,6 +26,7 @@ import { AuthoritySosPage } from './src/pages/AuthoritySosPage';
 import { AuthorityRiskZonesPage } from './src/pages/AuthorityRiskZonesPage';
 import { AuthorityUsersPage } from './src/pages/AuthorityUsersPage';
 import { AuthorityDashboard } from './src/pages/AuthorityDashboard';
+import { TrackPage } from './src/pages/TrackPage';
 
 // Simple placeholder pages for missing ones to prevent crashing
 // (No placeholders needed for Authority anymore)
@@ -44,6 +45,7 @@ const App: React.FC = () => {
           <Route path="/guardian/complete-profile" element={<GuardianCompleteProfile />} />
           <Route path="/pending" element={<PendingReviewPage />} />
           <Route path="/rejected" element={<RejectedPage />} />
+          <Route path="/track/:sessionId" element={<TrackPage />} />
 
           {/* Authenticated Routes with Global App Layout */}
           <Route path="/app" element={<ProtectedRoute><GlobalLayout /></ProtectedRoute>}>
