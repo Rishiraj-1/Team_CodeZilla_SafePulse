@@ -19,6 +19,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from geoalchemy2.elements import WKTElement
 
 from app.database import get_db
 from app.middleware.auth import _get_current_user

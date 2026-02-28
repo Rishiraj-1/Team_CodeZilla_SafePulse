@@ -325,12 +325,11 @@ export const addSafetyZones = async (map: mapboxgl.Map, center: [number, number]
 
     // Build individual polygon sources per zone so they each stay geographically accurate
     dynamicRiskZones.forEach((z: any) => {
-        // Use radius from backend if provided, otherwise match mock zone sizes (200m HIGH, 150m MEDIUM, 100m LOW)
-        const radiusMeters = z.radius || (z.risk_level === 'HIGH' ? 200 : z.risk_level === 'MEDIUM' ? 150 : 100);
+        // Use reduced radius sizes to prevent danger zones from looking too big
+        const radiusMeters = (z.radius || (z.risk_level === 'HIGH' ? 200 : z.risk_level === 'MEDIUM' ? 150 : 100)) * 0.25;
         // All zones use red — brighter for HIGH, slightly muted for MEDIUM/LOW
         const color = z.risk_level === 'HIGH' ? '#ef4444' : z.risk_level === 'MEDIUM' ? '#f87171' : '#fca5a5';
         const fillOpacity = z.risk_level === 'HIGH' ? 0.30 : 0.20;
-        const outlineOpacity = z.risk_level === 'HIGH' ? 0.9 : 0.6;
         const sourceId = `dyn-risk-${z.id ?? (z.latitude + '-' + z.longitude)}`;
         const polygon = makeCirclePolygon(z.longitude, z.latitude, radiusMeters);
 
@@ -346,17 +345,6 @@ export const addSafetyZones = async (map: mapboxgl.Map, center: [number, number]
                 paint: {
                     'fill-color': color,
                     'fill-opacity': fillOpacity
-                }
-            });
-            // Outline layer
-            map.addLayer({
-                id: `${sourceId}-outline`,
-                type: 'line',
-                source: sourceId,
-                paint: {
-                    'line-color': color,
-                    'line-width': 1.5,
-                    'line-opacity': outlineOpacity
                 }
             });
         }

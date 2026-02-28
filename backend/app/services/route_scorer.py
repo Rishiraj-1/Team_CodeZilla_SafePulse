@@ -88,13 +88,13 @@ async def score_route(
     # Convert coordinates to WKT LineString (lng lat)
     line_wkt = "LINESTRING(" + ", ".join([f"{c[1]} {c[0]}" for c in coords]) + ")"
 
-    # Check for direct intersection with active risk zone polygons
-    # We prioritize polygons for the "Oracle" logic
+    # Check for direct intersection with active risk zone centroids within their radius
     stmt = select(RiskZone).where(
         RiskZone.active == True,
-        func.ST_Intersects(
-            RiskZone.polygon,
-            func.ST_GeogFromText(line_wkt)
+        func.ST_DWithin(
+            RiskZone.centroid,
+            func.ST_GeogFromText(line_wkt),
+            settings.RISK_CLUSTER_RADIUS_M
         )
     )
     result = await db.execute(stmt)

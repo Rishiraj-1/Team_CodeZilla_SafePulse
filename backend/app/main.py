@@ -110,4 +110,17 @@ async def health():
 
 @app.get("/health", tags=["Health"])
 async def health_check():
-    return {"status": "healthy"}
+    db_status = "ok"
+    try:
+        from app.database.session import _get_engine
+        from sqlalchemy import text
+        engine = _get_engine()
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+        
+    return {
+        "status": "ok",
+        "database": db_status
+    }
